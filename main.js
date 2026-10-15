@@ -15,6 +15,7 @@ app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('in-process-gpu');
 
 let mainWindow = null;
+let alwaysOnTopDesired = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -24,6 +25,7 @@ function createWindow() {
     minHeight: 640,
     title: 'Content Hub',
     autoHideMenuBar: true,
+    alwaysOnTop: alwaysOnTopDesired,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -54,6 +56,17 @@ ipcMain.handle('open-external', async (_event, url) => {
     return true;
   }
   return false;
+});
+
+// v1.2 항상 위에: renderer 토글 → mainWindow.setAlwaysOnTop
+// app.whenReady 이전에 등록해야 renderer가 언제 호출해도 준비됨.
+// 창이 아직 없을 때 호출되면 desired 값만 저장하고, 창 생성 시 적용한다.
+ipcMain.handle('set-always-on-top', (_event, enabled) => {
+  alwaysOnTopDesired = Boolean(enabled);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setAlwaysOnTop(alwaysOnTopDesired);
+  }
+  return alwaysOnTopDesired;
 });
 
 app.whenReady().then(() => {

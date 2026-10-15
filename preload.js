@@ -3,4 +3,5 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('hub', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  setAlwaysOnTop: (enabled) => ipcRenderer.invoke('set-always-on-top', Boolean(enabled)),
 });
