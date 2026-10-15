@@ -4,6 +4,19 @@
 
 const { app, BrowserWindow, Menu, shell, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
+
+// 진단 로그: 앱이 왜 꺼지는지 파일로 남김 (%TEMP%/content-hub-crash.log)
+function diagLog(msg) {
+  try {
+    const line = `[${new Date().toISOString()}] ${msg}\n`;
+    console.log(line.trim());
+    fs.appendFileSync(path.join(app.getPath('temp'), 'content-hub-crash.log'), line);
+  } catch (_) { /* 로그 실패는 무시 */ }
+}
+process.on('uncaughtException', (e) => diagLog(`UNCAUGHT: ${e && e.stack || e}`));
+process.on('unhandledRejection', (e) => diagLog(`UNHANDLED_REJECTION: ${e && e.stack || e}`));
+app.on('render-process-gone', (_e, wc, details) => diagLog(`RENDER_GONE: reason=${details && details.reason} exitCode=${details && details.exitCode}`));
 
 // GPU 문제 있는 윈도우 PC 대응: 하드웨어 가속 끄고 GPU 샌드박스 비활성화
 // (GPU process exited unexpectedly / GPU process isn't usable / GLES3 context 생성 실패 회피)
@@ -43,6 +56,11 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  diagLog('WINDOW_CREATED: loadFile called');
+
+  mainWindow.webContents.on('crashed', (_e, killed) => diagLog(`WEBCONTENTS_CRASHED: killed=${killed}`));
+  mainWindow.webContents.on('render-process-gone', (_e, details) => diagLog(`WEBCONTENTS_GONE: ${JSON.stringify(details)}`));
+  mainWindow.webContents.on('did-fail-load', (_e, code, desc, url) => diagLog(`DID_FAIL_LOAD: code=${code} desc=${desc} url=${url}`));
 
   // 앱 안에서 새 창이 뜨는 경우: 외부 브라우저로 보내서 허브 창을 깨지 않음.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -88,5 +106,6 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  diagLog('WINDOW_ALL_CLOSED: quitting');
   if (process.platform !== 'darwin') app.quit();
 });
