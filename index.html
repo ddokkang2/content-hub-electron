@@ -6,8 +6,9 @@
   <title>Content Hub</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="view-focus">
+<body class="view-focus grid-cols-3">
   <header class="topbar">
+    <button type="button" id="toggle-sidebar" class="icon-btn" title="사이드바 접기/펼치기 (Ctrl/Cmd+B)" aria-label="사이드바 접기/펼치기">☰</button>
     <div class="brand">
       <span class="brand-mark">◧</span>
       <span class="brand-name">Content Hub</span>
@@ -20,7 +21,40 @@
       <button type="button" data-view="split" class="view-btn">2분할</button>
       <button type="button" data-view="full" class="view-btn">전체 보기</button>
     </nav>
+    <div class="grid-controls" aria-label="그리드 열 개수">
+      <span class="grid-controls-label">그리드 열:</span>
+      <button type="button" data-cols="2" class="cols-btn">2열</button>
+      <button type="button" data-cols="3" class="cols-btn is-active">3열</button>
+      <button type="button" data-cols="4" class="cols-btn">4열</button>
+    </div>
+    <!-- v1.2: 레이아웃 프리셋 -->
+    <div class="preset-controls" aria-label="레이아웃 프리셋">
+      <select id="preset-select" title="레이아웃 프리셋 불러오기">
+        <option value="">프리셋 선택</option>
+      </select>
+      <button type="button" id="save-preset" title="현재 레이아웃을 프리셋으로 저장">프리셋 저장</button>
+      <button type="button" id="delete-preset" class="secondary" title="선택한 사용자 프리셋 삭제">프리셋 삭제</button>
+    </div>
+    <!-- v1.2: 자동 새로고침 -->
+    <div class="auto-refresh-controls" aria-label="자동 새로고침">
+      <label>
+        자동 새로고침
+        <select id="auto-refresh-select" title="포커스만 자동 새로고침하는 간격">
+          <option value="0">끄기</option>
+          <option value="5">5분</option>
+          <option value="15">15분</option>
+          <option value="30">30분</option>
+        </select>
+      </label>
+      <span id="auto-refresh-status" class="auto-refresh-status">자동 새로고침: 끄기</span>
+    </div>
     <div class="top-actions">
+      <button type="button" id="toggle-always-on-top" title="창을 항상 위에 고정">📌 항상 위에</button>
+      <button type="button" id="open-account-manager">계정 관리</button>
+      <button type="button" id="open-snapshot-modal">📸 스냅샷</button>
+      <button type="button" id="open-quick-switch" title="빠른 전환 (Ctrl/Cmd+K)">빠른 전환 ⌘K</button>
+      <button type="button" id="open-help-modal" class="icon-btn" title="단축키 도움말" aria-label="단축키 도움말">?</button>
+      <button type="button" id="open-site-manager">사이트 관리</button>
       <button type="button" id="refresh-all">전체 새로고침</button>
       <button type="button" id="open-focused-external" class="secondary">포커스 외부 브라우저로 열기</button>
     </div>
@@ -28,7 +62,7 @@
 
   <div class="layout">
     <aside class="sidebar" aria-label="플랫폼 목록">
-      <p class="sidebar-hint">클릭하면 포커스가 바뀝니다.<br />로그인은 앱에 유지됩니다.</p>
+      <p class="sidebar-hint">클릭하면 포커스가 바뀝니다.<br />로그인은 앱에 유지됩니다.<br />같은 사이트를 다른 계정으로 열면 별도 pane으로 뜹니다.</p>
       <div class="platform-list" id="platform-list">
         <!-- renderer.js가 버튼을 채웁니다 -->
       </div>
@@ -36,101 +70,116 @@
         <p><strong>왜 webview인가?</strong></p>
         <p>iframe이 아니라 Electron webview라서 각 사이트의 frame-ancestors 차단을 받지 않고 앱 안에 그대로 뜹니다.</p>
         <p>비밀번호 저장 없음 · API 없음.</p>
+        <p>계정마다 webview partition이 분리되어 로그인이 섞이지 않습니다.</p>
       </div>
     </aside>
 
     <main class="stage" id="stage">
-      <!-- 각 pane: 헤더 + webview. partition="persist:content-hub"으로 로그인 유지 -->
-      <section class="pane" data-platform="youtube" data-order="0">
-        <div class="pane-head">
-          <span class="pane-title">YouTube Studio</span>
-          <span class="pane-url">studio.youtube.com</span>
-          <span class="pane-status" data-status>대기</span>
-          <div class="pane-actions">
-            <button type="button" data-refresh="youtube">새로고침</button>
-            <button type="button" data-external="youtube" class="secondary">외부로</button>
-          </div>
-        </div>
-        <webview class="wv" partition="persist:content-hub" src="https://studio.youtube.com" allowpopups></webview>
-        <div class="pane-fallback" hidden>
-          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
-          <button type="button" data-retry="youtube">다시 시도</button>
-          <button type="button" data-external="youtube">외부 브라우저로 열기</button>
-        </div>
-      </section>
-
-      <section class="pane" data-platform="x" data-order="1">
-        <div class="pane-head">
-          <span class="pane-title">X</span>
-          <span class="pane-url">x.com/home</span>
-          <span class="pane-status" data-status>대기</span>
-          <div class="pane-actions">
-            <button type="button" data-refresh="x">새로고침</button>
-            <button type="button" data-external="x" class="secondary">외부로</button>
-          </div>
-        </div>
-        <webview class="wv" partition="persist:content-hub" src="https://x.com/home" allowpopups></webview>
-        <div class="pane-fallback" hidden>
-          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
-          <button type="button" data-retry="x">다시 시도</button>
-          <button type="button" data-external="x">외부 브라우저로 열기</button>
-        </div>
-      </section>
-
-      <section class="pane" data-platform="instagram" data-order="2">
-        <div class="pane-head">
-          <span class="pane-title">Instagram</span>
-          <span class="pane-url">instagram.com</span>
-          <span class="pane-status" data-status>대기</span>
-          <div class="pane-actions">
-            <button type="button" data-refresh="instagram">새로고침</button>
-            <button type="button" data-external="instagram" class="secondary">외부로</button>
-          </div>
-        </div>
-        <webview class="wv" partition="persist:content-hub" src="https://www.instagram.com/" allowpopups></webview>
-        <div class="pane-fallback" hidden>
-          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
-          <button type="button" data-retry="instagram">다시 시도</button>
-          <button type="button" data-external="instagram">외부 브라우저로 열기</button>
-        </div>
-      </section>
-
-      <section class="pane" data-platform="threads" data-order="3">
-        <div class="pane-head">
-          <span class="pane-title">Threads</span>
-          <span class="pane-url">threads.net</span>
-          <span class="pane-status" data-status>대기</span>
-          <div class="pane-actions">
-            <button type="button" data-refresh="threads">새로고침</button>
-            <button type="button" data-external="threads" class="secondary">외부로</button>
-          </div>
-        </div>
-        <webview class="wv" partition="persist:content-hub" src="https://www.threads.net/" allowpopups></webview>
-        <div class="pane-fallback" hidden>
-          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
-          <button type="button" data-retry="threads">다시 시도</button>
-          <button type="button" data-external="threads">외부 브라우저로 열기</button>
-        </div>
-      </section>
-
-      <section class="pane" data-platform="tiktok" data-order="4">
-        <div class="pane-head">
-          <span class="pane-title">TikTok Studio</span>
-          <span class="pane-url">tiktok.com/tiktokstudio</span>
-          <span class="pane-status" data-status>대기</span>
-          <div class="pane-actions">
-            <button type="button" data-refresh="tiktok">새로고침</button>
-            <button type="button" data-external="tiktok" class="secondary">외부로</button>
-          </div>
-        </div>
-        <webview class="wv" partition="persist:content-hub" src="https://www.tiktok.com/tiktokstudio/" allowpopups></webview>
-        <div class="pane-fallback" hidden>
-          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
-          <button type="button" data-retry="tiktok">다시 시도</button>
-          <button type="button" data-external="tiktok">외부 브라우저로 열기</button>
-        </div>
-      </section>
+      <!-- renderer.js가 사이트 목록에 따라 pane을 동적 생성합니다. -->
+      <div class="focus-divider" id="focus-divider" title="드래그해서 포커스/미니 바 너비 조절"></div>
     </main>
+  </div>
+
+  <!-- 사이트 관리 모달 -->
+  <div class="modal-backdrop" id="site-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="site-modal-title">
+      <div class="modal-head">
+        <h2 id="site-modal-title">사이트 관리</h2>
+        <button type="button" id="close-site-modal" class="secondary" aria-label="닫기">✕</button>
+      </div>
+      <p class="modal-desc">사이트를 추가·수정·제거할 수 있습니다. 최소 1개는 남겨야 합니다. 변경 사항은 앱에 저장되어 재시작해도 유지됩니다. 같은 사이트를 다른 계정으로 열려면 행마다 <strong>계정으로 열기</strong>를 쓰세요.</p>
+      <ul class="site-manage-list" id="site-manage-list"></ul>
+      <form class="site-form" id="site-form">
+        <label>
+          이름
+          <input type="text" id="site-name" placeholder="예: Notion" maxlength="40" autocomplete="off" />
+        </label>
+        <label>
+          URL
+          <input type="text" id="site-url" placeholder="https://example.com" autocomplete="off" />
+        </label>
+        <p class="form-error" id="site-form-error" hidden></p>
+        <div class="form-actions">
+          <button type="submit" id="site-save-btn">사이트 추가</button>
+          <button type="button" id="site-cancel-edit" class="secondary" hidden>편집 취소</button>
+        </div>
+      </form>
+      <div class="modal-foot">
+        <button type="button" id="reset-default-sites" class="secondary">기본값으로 복원</button>
+        <span class="modal-count" id="site-count"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- v1.2: 계정 관리 모달 -->
+  <div class="modal-backdrop" id="account-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="account-modal-title">
+      <div class="modal-head">
+        <h2 id="account-modal-title">계정 관리</h2>
+        <button type="button" id="close-account-modal" class="secondary" aria-label="닫기">✕</button>
+      </div>
+      <p class="modal-desc">계정마다 webview partition이 분리됩니다 (예: YouTube 개인 / YouTube 업무를 동시에 로그인). 최소 1개 계정이 남아야 하며, 기본 계정은 삭제할 수 없습니다. 계정을 지우면 그 계정의 pane은 기본 계정으로 옮겨지거나, 같은 사이트의 기본 pane이 이미 있으면 닫힙니다.</p>
+      <ul class="account-manage-list" id="account-manage-list"></ul>
+      <form class="site-form" id="account-form">
+        <label>
+          새 계정 이름
+          <input type="text" id="account-name" placeholder="예: 개인, 업무" maxlength="30" autocomplete="off" />
+        </label>
+        <label>
+          색상 라벨
+          <input type="color" id="account-color" value="#4da3ff" />
+        </label>
+        <p class="form-error" id="account-form-error" hidden></p>
+        <div class="form-actions">
+          <button type="submit" id="account-add-btn">계정 추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- v1.2: 단축키 도움말 모달 -->
+  <div class="modal-backdrop" id="help-modal" hidden>
+    <div class="modal modal-narrow" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+      <div class="modal-head">
+        <h2 id="help-modal-title">단축키</h2>
+        <button type="button" id="close-help-modal" class="secondary" aria-label="닫기">✕</button>
+      </div>
+      <table class="help-table">
+        <tbody>
+          <tr><td><kbd>Ctrl / Cmd</kbd> + <kbd>1</kbd> ~ <kbd>9</kbd></td><td>사이드바 순서대로 pane 포커스 전환</td></tr>
+          <tr><td><kbd>Ctrl / Cmd</kbd> + <kbd>B</kbd></td><td>사이드바 접기 / 펼치기</td></tr>
+          <tr><td><kbd>Ctrl / Cmd</kbd> + <kbd>R</kbd> 또는 <kbd>F5</kbd></td><td>포커스 pane만 새로고침 (브라우저 기본 새로고침 대신)</td></tr>
+          <tr><td><kbd>Ctrl / Cmd</kbd> + <kbd>K</kbd></td><td>빠른 전환 팝업 열기 / 닫기</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>열린 모달 / 팝업 닫기</td></tr>
+          <tr><td><kbd>↑</kbd> / <kbd>↓</kbd> + <kbd>Enter</kbd></td><td>빠른 전환에서 이동 / 선택</td></tr>
+        </tbody>
+      </table>
+      <p class="modal-desc">입력 필드에 포커스가 있을 때는 단축키가 동작하지 않습니다 (Esc 제외). 빠른 전환 입력 중에는 Ctrl/Cmd+K를 눌러도 팝업이 중복으로 열리지 않습니다.</p>
+    </div>
+  </div>
+
+  <!-- v1.2: 북마크 스냅샷 모달 -->
+  <div class="modal-backdrop" id="snapshot-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="snapshot-modal-title">
+      <div class="modal-head">
+        <h2 id="snapshot-modal-title">북마크 스냅샷</h2>
+        <button type="button" id="close-snapshot-modal" class="secondary" aria-label="닫기">✕</button>
+      </div>
+      <p class="modal-desc">현재 모든 pane의 URL + 포커스 + 뷰 + 그리드 설정을 스냅샷으로 저장합니다. 복원하면 각 pane이 저장된 URL로 다시 로드됩니다.</p>
+      <div class="form-actions">
+        <button type="button" id="save-snapshot-btn">현재 상태 스냅샷 저장</button>
+      </div>
+      <ul class="snapshot-list" id="snapshot-list"></ul>
+    </div>
+  </div>
+
+  <!-- v1.2: 빠른 전환 팝업 -->
+  <div class="quick-switch-backdrop" id="quick-switch" hidden>
+    <div class="quick-switch" role="dialog" aria-modal="true" aria-label="빠른 전환">
+      <input type="text" id="quick-switch-input" placeholder="사이트 이름 또는 URL 검색… (Enter: 이동, Esc: 닫기)" autocomplete="off" />
+      <ul class="quick-switch-list" id="quick-switch-list"></ul>
+      <p class="quick-switch-hint">↑ / ↓ 이동 · Enter 선택 · Esc 닫기</p>
+    </div>
   </div>
 
   <script src="renderer.js"></script>
