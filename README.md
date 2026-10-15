@@ -7,7 +7,7 @@ iframe이 아니라 Electron `webview`로 띄워서, 각 사이트의 `frame-anc
 - 비밀번호 저장 없음. API 없음.
 - 로그인은 `persist:content-hub` 파티션의 Chromium 세션에 유지됨. 한 번 로그인하면 앱을 껐다 켜도 유지된다.
 
-## 포함 플랫폼
+## 포함 플랫폼 (기본값 — 사이트 관리에서 변경 가능)
 
 | 플랫폼 | 주소 |
 |---|---|
@@ -16,6 +16,89 @@ iframe이 아니라 Electron `webview`로 띄워서, 각 사이트의 `frame-anc
 | Instagram | https://www.instagram.com/ |
 | Threads | https://www.threads.net/ |
 | TikTok Studio | https://www.tiktok.com/tiktokstudio/ |
+
+## v1.1 새 기능 — 사이트 추가/제거 + 창/그리드 조절
+
+### 사이트 N개 추가/제거
+
+상단 **사이트 관리** 버튼을 누르면 모달이 열린다.
+
+- **추가**: 이름 + URL 입력 → **사이트 추가**. URL에 `https://`가 없어도 자동으로 붙는다. 잘못된 URL이면 안내 메시지가 뜬다.
+- **수정**: 목록에서 **수정** → 이름/URL을 고친 뒤 **수정 저장**.
+- **제거**: 목록에서 **제거**. 기본 5개 포함 어떤 사이트든 지울 수 있지만, 최소 1개는 남아야 한다. 1개만 남았을 때는 제거가 막힌다.
+- **기본값으로 복원**: 모달 하단 버튼으로 기본 5개(YouTube Studio / X / Instagram / Threads / TikTok Studio)로 되돌릴 수 있다.
+- 추가/수정/제거한 목록은 브라우저 `localStorage`(`content-hub-custom-sites`)에 저장되어 앱을 껐다 켜도 유지된다. 기본 5개는 코드 기본값으로 유지된다.
+- 추가한 사이트도 기존 5개와 똑같이 포커스/그리드/리스트/2분할/전체 보기에서 동작하고, 로그인 세션(`persist:content-hub`)을 공유한다.
+
+### 창/그리드 조절
+
+- **포커스 구분선 드래그**: 포커스 뷰에서 큰 패널과 오른쪽 미니 바 사이의 구분선을 마우스로 좌우로 끌면 너비를 조절할 수 있다. 미니 바 최소 300px, 최대 stage 너비의 80%까지.
+- **그리드 열 개수**: 그리드 뷰에서 상단에 나타나는 **그리드 열: 2열 / 3열 / 4열** 버튼으로 열 개수를 바꾼다.
+- **사이드바 접기/펼치기**: 상단 왼쪽 ☰ 버튼으로 사이드바를 접거나 펼친다.
+- 조절값(그리드 열 수, 포커스 미니 바 너비, 사이드바 접힘)은 `localStorage`(`content-hub-layout`)에 저장되어 재시작해도 유지된다.
+
+## v1.2 새 기능 — 프리셋 / 단축키 / 자동 새로고침 / 항상 위에 / 계정 분리 / 빠른 전환 / 스냅샷
+
+### 1. 레이아웃 프리셋
+
+상단 **프리셋 선택** 드롭다운 + **프리셋 저장 / 프리셋 삭제** 버튼.
+
+- 기본 프리셋 3개 (삭제 불가):
+  - **작업용**: 포커스 뷰 + YouTube pane 포커스 + 그리드 3열 + 미니 바 300px + 사이드바 펼침
+  - **모니터링용**: 그리드 뷰 + 그리드 3열
+  - **편집용**: 2분할 뷰 + 그리드 2열 + 미니 바 320px
+- 프리셋에는 뷰 모드, 포커스 pane, 그리드 열 수, 미니 바 너비, 사이드바 접힘이 저장된다.
+- **프리셋 저장**을 누르면 현재 레이아웃을 이름과 함께 저장한다 (삭제 가능).
+- 사용자 프리셋은 `localStorage`(`content-hub-presets`)에 저장되어 재시작해도 유지된다.
+
+### 2. 단축키
+
+| 단축키 | 동작 |
+|---|---|
+| `Ctrl/Cmd + 1` ~ `9` | 사이드바 순서대로 pane 포커스 전환 |
+| `Ctrl/Cmd + B` | 사이드바 접기 / 펼치기 |
+| `Ctrl/Cmd + R` 또는 `F5` | 포커스 pane만 새로고침 (브라우저 기본 새로고침 대신 `preventDefault`) |
+| `Ctrl/Cmd + K` | 빠른 전환 팝업 열기 |
+| `Esc` | 열린 모달 / 팝업 닫기 |
+
+상단 **?** 버튼으로 단축키 도움말 모달을 연다. 입력 필드에 포커스가 있을 때는 단축키가 동작하지 않는다 (Esc 제외).
+
+### 3. 자동 새로고침
+
+상단 **자동 새로고침** 선택: 끄기 / 5분 / 15분 / 30분.
+
+- 선택하면 해당 간격마다 **포커스 pane만** 자동 새로고침한다 (전체가 아님).
+- 설정은 `localStorage`(`content-hub-auto-refresh`)에 저장되어 재시작해도 유지된다.
+- 켜져 있으면 상단에 `자동 새로고침: N분마다 · 포커스만` 상태가 노란색으로 표시된다.
+
+### 4. 항상 위에
+
+상단 **📌 항상 위에** 토글 버튼. 켜면 창이 다른 창 위에 고정되고, 버튼이 노란색 `ON` 상태가 된다. 설정은 `localStorage`(`content-hub-always-on-top`)에 저장되어 재시작해도 유지된다. `main.js`의 `ipcMain.handle('set-always-on-top')` + `preload.js`의 `hub.setAlwaysOnTop`으로 구현되어 있다.
+
+### 5. 계정별 세션 분리 (계정 관리) — 가장 중요
+
+v1.1까지는 모든 webview가 `persist:content-hub` 하나를 공유했지만, v1.2부터 계정마다 partition이 분리된다.
+
+- **계정 관리** 버튼으로 모달을 연다. 계정 추가(이름 + 색상 라벨), 계정 이름/색상 수정, 계정 제거 가능. 최소 1개 계정 유지, **기본 계정은 삭제 불가**.
+- 기본 계정은 v1.1과 같은 `persist:content-hub` 파티션을 그대로 써서 기존 로그인 세션이 유지된다. 그 외 계정은 `persist:content-hub-<accountId>` 파티션을 쓴다 (예: `persist:content-hub-acc-personal`, `persist:content-hub-acc-work`).
+- 각 pane 헤더에 **계정 선택 드롭다운**이 있다. 계정을 바꾸면 해당 webview만 새 partition으로 **재생성**한다 (Electron webview는 로드 후 partition 변경이 안 되므로 엘리먼트 교체가 필수). 현재 URL은 유지된 채 새 파티션에서 열린다.
+- 같은 사이트를 다른 계정으로 두 번 열 수 있다: 사이트 관리 모달의 각 행에서 계정을 선택하고 **계정으로 열기**를 누르면 별도 pane이 추가된다. pane 식별자는 `플랫폼 + '::' + 계정` (예: `youtube::default`, `youtube::acc-work`).
+- 계정 색상 점이 pane 헤더와 사이드바에 표시된다.
+- 계정 목록은 `localStorage`(`content-hub-accounts`), pane 구성은 `localStorage`(`content-hub-panes`)에 저장된다.
+- 계정을 제거하면 그 계정의 pane은 기본 계정으로 옮겨지며, 같은 사이트의 기본 pane이 이미 있으면 중복 방지를 위해 닫힌다.
+
+### 6. 빠른 전환 (Ctrl/Cmd+K)
+
+`Ctrl/Cmd + K` 또는 상단 **빠른 전환 ⌘K** 버튼을 누르면 검색 팝업이 열린다. 사이트 이름/URL/계정명으로 필터링하고, `↑/↓`로 이동, `Enter`로 해당 pane으로 포커스 이동, `Esc`로 닫는다. 입력 필드에 포커스가 있는 동안에는 `Ctrl/Cmd+K`가 중복 동작하지 않는다.
+
+### 7. 북마크 스냅샷
+
+상단 **📸 스냅샷** 버튼으로 모달을 연다.
+
+- **현재 상태 스냅샷 저장**: 현재 모든 pane의 URL(`webview.getURL()`) + 포커스 + 뷰 + 그리드 설정을 이름과 시간과 함께 저장한다.
+- 목록에서 **복원**하면 pane 구성이 스냅샷대로 재구성되고 각 pane이 저장된 URL로 로드된다. 스냅샷에 있던 계정이 현재 목록에 없으면 같은 id로 복원해 파티션을 유지한다.
+- **삭제**로 스냅샷을 지울 수 있다.
+- 스냅샷은 `localStorage`(`content-hub-snapshots`)에 저장된다.
 
 ## 뷰 모드 (기본: 포커스)
 
@@ -146,11 +229,11 @@ Electron `webview`는 최상위 웹 콘텐츠라 이 차단을 받지 않고, �
 ```
 content-hub-electron/
   package.json   # electron / electron-builder, scripts
-  main.js        # BrowserWindow, webviewTag, new-window 처리, 메뉴 최소화
-  preload.js     # 외부 열기 최소 API만 노출
-  index.html     # 상단 뷰 전환 + 사이드바 + 5개 webview pane
-  styles.css     # 포커스/그리드/리스트/2분할/전체 보기 레이아웃
-  renderer.js    # 뷰 전환, 포커스 선택, 새로고침, webview 이벤트
+  main.js        # BrowserWindow, webviewTag, new-window 처리, 메뉴 최소화 + 항상 위에 ipc
+  preload.js     # 외부 열기 + 항상 위에 최소 API만 노출
+  index.html     # 상단 뷰 전환 + 사이드바 + 사이트 관리 모달 + 그리드 열 선택 + 프리셋/자동 새로고침/항상 위에/계정/스냅샷/빠른 전환/도움말 UI (pane은 JS가 동적 생성)
+  styles.css     # 포커스/그리드/리스트/2분할/전체 보기 + 모달/구분선/사이드바 접힘 + v1.2 UI 레이아웃
+  renderer.js    # 뷰 전환, 포커스 선택, 새로고침, webview 이벤트 + 사이트 CRUD + 레이아웃 조절 + v1.2 7개 기능
   run.bat        # GPU 문제 있는 PC용 실행 스크립트 (개발용)
 ```
 

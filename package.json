@@ -36,5 +36,5 @@
     "pack": "electron-builder --win --dir",
     "start": "electron ."
   },
-  "version": "1.0.0"
+  "version": "1.2.0"
 }
