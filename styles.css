@@ -1,0 +1,151 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --line: #262b36;
+  --text: #eef1f5;
+  --muted: #9aa3b2;
+  --accent: #ffd84d;
+  --accent-text: #111;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+button {
+  border: 1px solid var(--line);
+  background: #22262f;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 11px;
+  cursor: pointer;
+  font-size: 13px;
+}
+button:hover { border-color: #3d4452; }
+button.is-active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+button.secondary { background: transparent; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 8px; }
+.brand-mark { font-size: 20px; }
+.brand-name { font-weight: 800; font-size: 17px; }
+.brand-sub { color: var(--muted); font-size: 12px; }
+.view-switch { display: flex; gap: 6px; margin-left: auto; }
+.top-actions { display: flex; gap: 6px; }
+
+.layout { display: flex; flex: 1; min-height: 0; }
+.sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line);
+  padding: 14px 12px;
+  background: #12151b;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+.sidebar-hint { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.platform-list { display: flex; flex-direction: column; gap: 8px; }
+.platform-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 10px 11px;
+}
+.platform-btn .dot { width: 9px; height: 9px; border-radius: 50%; background: #5a6372; flex-shrink: 0; }
+.platform-btn.is-focus .dot { background: var(--accent); }
+.platform-btn .p-name { font-weight: 700; }
+.platform-btn .p-url { display: block; color: var(--muted); font-size: 11px; font-weight: 400; }
+.sidebar-note {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.sidebar-note strong { color: var(--text); }
+.sidebar-note p { margin: 0 0 8px; }
+
+.stage { flex: 1; min-width: 0; padding: 12px; display: grid; gap: 12px; overflow: hidden; }
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.pane.is-focus { border-color: var(--accent); }
+.pane-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.pane-title { font-weight: 800; font-size: 14px; }
+.pane-url { color: var(--muted); font-size: 12px; }
+.pane-status { margin-left: auto; color: var(--muted); font-size: 11px; }
+.pane-actions { display: flex; gap: 6px; }
+.pane-actions button { padding: 5px 8px; font-size: 12px; }
+.wv { flex: 1; width: 100%; min-height: 0; background: #fff; }
+.pane-fallback { padding: 16px; font-size: 13px; line-height: 1.6; }
+.pane-fallback p { margin: 0 0 10px; }
+
+/* 포커스: 1개 크게 + 나머지 4개는 미니 바 (오른쪽 좁은 열) */
+body.view-focus .stage {
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: repeat(4, 1fr);
+}
+body.view-focus .pane.is-focus { grid-row: 1 / 5; grid-column: 1; }
+body.view-focus .pane:not(.is-focus) { grid-column: 2; }
+body.view-focus .pane:not(.is-focus) .pane-url,
+body.view-focus .pane:not(.is-focus) .pane-status { display: none; }
+
+/* 그리드: 5개 타일 */
+body.view-grid .stage {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+body.view-grid .pane[data-order="3"],
+body.view-grid .pane[data-order="4"] { grid-column: span 1; }
+
+/* 리스트: 목록은 사이드바 + 선택 1개 크게 (나머지 숨김) */
+body.view-list .stage { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+body.view-list .pane:not(.is-focus) { display: none; }
+
+/* 2분할: 포커스 + 그 다음 플랫폼 */
+body.view-split .stage { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+body.view-split .pane { display: none; }
+body.view-split .pane.is-focus,
+body.view-split .pane.is-second { display: flex; }
+
+/* 전체 보기: 포커스 1개만 */
+body.view-full .stage { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+body.view-full .pane:not(.is-focus) { display: none; }
+
+@media (max-width: 1100px) {
+  .sidebar { width: 190px; }
+  body.view-focus .stage { grid-template-columns: 1fr 230px; }
+  .brand-sub { display: none; }
+}

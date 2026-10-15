@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Content Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="view-focus">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◧</span>
+      <span class="brand-name">Content Hub</span>
+      <span class="brand-sub">YouTube · X · Instagram · Threads · TikTok — 한 창에</span>
+    </div>
+    <nav class="view-switch" aria-label="뷰 전환">
+      <button type="button" data-view="focus" class="view-btn is-active">포커스</button>
+      <button type="button" data-view="grid" class="view-btn">그리드</button>
+      <button type="button" data-view="list" class="view-btn">리스트</button>
+      <button type="button" data-view="split" class="view-btn">2분할</button>
+      <button type="button" data-view="full" class="view-btn">전체 보기</button>
+    </nav>
+    <div class="top-actions">
+      <button type="button" id="refresh-all">전체 새로고침</button>
+      <button type="button" id="open-focused-external" class="secondary">포커스 외부 브라우저로 열기</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="플랫폼 목록">
+      <p class="sidebar-hint">클릭하면 포커스가 바뀝니다.<br />로그인은 앱에 유지됩니다.</p>
+      <div class="platform-list" id="platform-list">
+        <!-- renderer.js가 버튼을 채웁니다 -->
+      </div>
+      <div class="sidebar-note">
+        <p><strong>왜 webview인가?</strong></p>
+        <p>iframe이 아니라 Electron webview라서 각 사이트의 frame-ancestors 차단을 받지 않고 앱 안에 그대로 뜹니다.</p>
+        <p>비밀번호 저장 없음 · API 없음.</p>
+      </div>
+    </aside>
+
+    <main class="stage" id="stage">
+      <!-- 각 pane: 헤더 + webview. partition="persist:content-hub"으로 로그인 유지 -->
+      <section class="pane" data-platform="youtube" data-order="0">
+        <div class="pane-head">
+          <span class="pane-title">YouTube Studio</span>
+          <span class="pane-url">studio.youtube.com</span>
+          <span class="pane-status" data-status>대기</span>
+          <div class="pane-actions">
+            <button type="button" data-refresh="youtube">새로고침</button>
+            <button type="button" data-external="youtube" class="secondary">외부로</button>
+          </div>
+        </div>
+        <webview class="wv" partition="persist:content-hub" src="https://studio.youtube.com" allowpopups></webview>
+        <div class="pane-fallback" hidden>
+          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
+          <button type="button" data-retry="youtube">다시 시도</button>
+          <button type="button" data-external="youtube">외부 브라우저로 열기</button>
+        </div>
+      </section>
+
+      <section class="pane" data-platform="x" data-order="1">
+        <div class="pane-head">
+          <span class="pane-title">X</span>
+          <span class="pane-url">x.com/home</span>
+          <span class="pane-status" data-status>대기</span>
+          <div class="pane-actions">
+            <button type="button" data-refresh="x">새로고침</button>
+            <button type="button" data-external="x" class="secondary">외부로</button>
+          </div>
+        </div>
+        <webview class="wv" partition="persist:content-hub" src="https://x.com/home" allowpopups></webview>
+        <div class="pane-fallback" hidden>
+          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
+          <button type="button" data-retry="x">다시 시도</button>
+          <button type="button" data-external="x">외부 브라우저로 열기</button>
+        </div>
+      </section>
+
+      <section class="pane" data-platform="instagram" data-order="2">
+        <div class="pane-head">
+          <span class="pane-title">Instagram</span>
+          <span class="pane-url">instagram.com</span>
+          <span class="pane-status" data-status>대기</span>
+          <div class="pane-actions">
+            <button type="button" data-refresh="instagram">새로고침</button>
+            <button type="button" data-external="instagram" class="secondary">외부로</button>
+          </div>
+        </div>
+        <webview class="wv" partition="persist:content-hub" src="https://www.instagram.com/" allowpopups></webview>
+        <div class="pane-fallback" hidden>
+          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
+          <button type="button" data-retry="instagram">다시 시도</button>
+          <button type="button" data-external="instagram">외부 브라우저로 열기</button>
+        </div>
+      </section>
+
+      <section class="pane" data-platform="threads" data-order="3">
+        <div class="pane-head">
+          <span class="pane-title">Threads</span>
+          <span class="pane-url">threads.net</span>
+          <span class="pane-status" data-status>대기</span>
+          <div class="pane-actions">
+            <button type="button" data-refresh="threads">새로고침</button>
+            <button type="button" data-external="threads" class="secondary">외부로</button>
+          </div>
+        </div>
+        <webview class="wv" partition="persist:content-hub" src="https://www.threads.net/" allowpopups></webview>
+        <div class="pane-fallback" hidden>
+          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
+          <button type="button" data-retry="threads">다시 시도</button>
+          <button type="button" data-external="threads">외부 브라우저로 열기</button>
+        </div>
+      </section>
+
+      <section class="pane" data-platform="tiktok" data-order="4">
+        <div class="pane-head">
+          <span class="pane-title">TikTok Studio</span>
+          <span class="pane-url">tiktok.com/tiktokstudio</span>
+          <span class="pane-status" data-status>대기</span>
+          <div class="pane-actions">
+            <button type="button" data-refresh="tiktok">새로고침</button>
+            <button type="button" data-external="tiktok" class="secondary">외부로</button>
+          </div>
+        </div>
+        <webview class="wv" partition="persist:content-hub" src="https://www.tiktok.com/tiktokstudio/" allowpopups></webview>
+        <div class="pane-fallback" hidden>
+          <p>이 페이지가 안 뜨면 새로고침하거나 외부 브라우저로 열어보세요.</p>
+          <button type="button" data-retry="tiktok">다시 시도</button>
+          <button type="button" data-external="tiktok">외부 브라우저로 열기</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
