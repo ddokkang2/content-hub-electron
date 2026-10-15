@@ -6,13 +6,21 @@ const { app, BrowserWindow, Menu, shell, ipcMain } = require('electron');
 const path = require('path');
 
 // GPU 문제 있는 윈도우 PC 대응: 하드웨어 가속 끄고 GPU 샌드박스 비활성화
-// (GPU process exited unexpectedly / GPU process isn't usable 오류 회피)
+// (GPU process exited unexpectedly / GPU process isn't usable / GLES3 context 생성 실패 회피)
+// 이 PC에서는 ANGLE/GLES 컨텍스트 생성 자체가 FATAL이라 SwiftShader 소프트웨어 렌더링 강제
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-gpu-sandbox');
 app.commandLine.appendSwitch('disable-software-rasterizer');
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('in-process-gpu');
+app.commandLine.appendSwitch('use-angle', 'swiftshader');
+app.commandLine.appendSwitch('use-gl', 'angle');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-gpu-rasterization');
+app.commandLine.appendSwitch('disable-accelerated-2d-canvas');
+app.commandLine.appendSwitch('disable-accelerated-video-decode');
+app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor,UseSkiaRenderer');
 
 let mainWindow = null;
 let alwaysOnTopDesired = false;
